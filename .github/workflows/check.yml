@@ -1,4 +1,4 @@
-name: Build docs and check cloudformation
+name: Build docs and check cloudformation and dead links
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-check:
     name: build docs
     runs-on: ubuntu-latest
     steps:
@@ -15,6 +15,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+        pip install mkdocs-linkcheck
     - name: Build documentation
       run: |
         mkdocs build
@@ -22,3 +23,8 @@ jobs:
       uses: ScottBrenner/cfn-lint-action@v2.2.1
     - name: Run cloudformation lint 
       run: cfn-lint -t stack.yml
+    - name: Setup markdown link check 
+      run: |
+        npm install -g markdown-link-check@3
+    - name: Check dead links 
+      run: find . -name \*.md -print0 | xargs -0 -n1 markdown-link-check
